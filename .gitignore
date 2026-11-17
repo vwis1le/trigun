@@ -1,0 +1,8 @@
+.env
+config.local.php
+*.key
+*.crt
+*.pem
+*.zip
+uploads/
+.vscode/
