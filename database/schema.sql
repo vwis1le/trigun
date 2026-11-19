@@ -80,8 +80,8 @@ CREATE TABLE incidents (
     REFERENCES users (id) ON DELETE SET NULL,
   CONSTRAINT fk_incidents_category FOREIGN KEY (category_id)
     REFERENCES categories (id),
-  CONSTRAINT chk_incidents_title CHECK (CHAR_LENGTH(TRIM(title)) >= 5),
-  CONSTRAINT chk_incidents_anon CHECK (is_anonymous = 0 OR reporter_id IS NULL)
+  CONSTRAINT chk_incidents_title CHECK (CHAR_LENGTH(TRIM(title)) >= 5)
+--  CONSTRAINT chk_incidents_anon CHECK (is_anonymous = 0 OR reporter_id IS NULL)
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------

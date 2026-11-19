@@ -1,29 +1,44 @@
 <?php
 session_start();
-require_once 'db.php';
+date_default_timezone_set('Africa/Nairobi');
+require_once __DIR__ . '/../db.php';
 $msg = '';
 
 if (isset($_GET['registered'])) {
-    $msg = "Account created successfully! Please log in.";
+    $msg = "Registration successful. Please sign in.";
+}
+if (isset($_GET['reset'])) {
+    $msg = "Password reset successful. Please sign in.";
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
+    $ipBin = @inet_pton($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
 
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
-    // RUBRIC REQUIREMENT: password_verify against BCRYPT hash
     if ($user && password_verify($password, $user['password_hash'])) {
         $_SESSION['user_id'] = $user['id'];
-        $_SESSION['fullname'] = $user['fullname'];
+        $_SESSION['fullname'] = $user['full_name'];
         $_SESSION['email'] = $user['email'];
-        $_SESSION['hash_preview'] = $user['password_hash'];
+        $_SESSION['role'] = $user['role'];
+
+        try {
+            $log = $pdo->prepare("INSERT INTO audit_log (user_id, action, incident_id, ip_address, details) VALUES (?, 'USER_LOGIN', NULL, ?, ?)");
+            $log->execute([$user['id'], $ipBin, "Authenticated as role: " . $user['role']]);
+        } catch (Exception $e) {}
+
         header("Location: dashboard.php");
         exit;
     } else {
+        try {
+            $log = $pdo->prepare("INSERT INTO audit_log (user_id, action, incident_id, ip_address, details) VALUES (?, 'LOGIN_FAILED', NULL, ?, ?)");
+            $log->execute([$user ? $user['id'] : null, $ipBin, "Failed login attempt for: " . substr($email, 0, 100)]);
+        } catch (Exception $e) {}
+
         $msg = "Invalid email or password.";
     }
 }
@@ -31,35 +46,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Incident Portal</title>
-    <style>
-        body { font-family: system-ui, sans-serif; background: #0b0f19; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: #151e32; padding: 32px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #1e293b; }
-        h2 { margin-top: 0; color: #38bdf8; }
-        label { font-size: 13px; color: #94a3b8; font-weight: 600; }
-        input { width: 100%; padding: 11px; margin: 6px 0 16px 0; border-radius: 6px; border: 1px solid #334155; background: #0b0f19; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        button:hover { background: #059669; }
-        .notice { background: #0369a1; color: #e0f2fe; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
-        a { color: #38bdf8; text-decoration: none; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Incident Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --surface: #ffffff;
+      --ink: #191816;
+      --muted: #6e6b64;
+      --line: #e6e2d8;
+      --line-dark: #191816;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg); color: var(--ink);
+      font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; line-height: 1.6;
+      display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px;
+    }
+    .auth-box {
+      width: 100%; max-width: 400px; background: var(--surface);
+      border: 1px solid var(--line); padding: 40px 36px;
+    }
+    h1 { font-family: 'Instrument Serif', Georgia, serif; font-size: 32px; font-weight: 400; margin-bottom: 6px; }
+    p.sub { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+    label {
+      display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+    }
+    input {
+      width: 100%; padding: 10px 12px; margin-bottom: 18px; border: 1px solid var(--line);
+      background: var(--bg); color: var(--ink); font-family: inherit; font-size: 14px; border-radius: 2px;
+    }
+    input:focus { outline: none; border-color: var(--line-dark); }
+    button {
+      width: 100%; padding: 12px; background: var(--ink); color: var(--bg);
+      border: none; font-weight: 500; font-size: 14px; cursor: pointer; border-radius: 2px; margin-top: 6px;
+    }
+    button:hover { background: #333; }
+    .msg {
+      background: #fdf2f2; color: #991b1b; border: 1px solid #fecaca;
+      padding: 10px 12px; font-size: 13px; margin-bottom: 18px;
+    }
+    .footer-nav {
+      margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line);
+      display: flex; justify-content: space-between; font-size: 12px;
+    }
+    .footer-nav a { color: var(--muted); text-decoration: none; }
+    .footer-nav a:hover { color: var(--ink); text-decoration: underline; }
+  </style>
 </head>
 <body>
-<div class="card">
-    <h2>Incident Portal Login</h2>
-    <?php if ($msg): ?><div class="notice"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
+  <div class="auth-box">
+    <h1>Sign In</h1>
+    <p class="sub">Incident Response Management Portal</p>
+    <?php if ($msg): ?><div class="msg"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
     <form method="POST">
-        <label>Strathmore Email</label>
-        <input type="email" name="email" required placeholder="user@strathmore.edu">
-
-        <label>Password</label>
-        <input type="password" name="password" required placeholder="••••••••">
-
-        <button type="submit">Sign In</button>
+      <label>Student / Staff Email</label>
+      <input type="email" name="email" required placeholder="name@strathmore.edu">
+      <label>Password</label>
+      <input type="password" name="password" required placeholder="••••••••">
+      <button type="submit">Sign In ↳</button>
     </form>
-    <p style="margin-top: 20px; text-align: center; font-size: 14px; color: #94a3b8;">Need an account? <a href="register.php">Register</a></p>
-</div>
+    <div class="footer-nav">
+      <a href="register.php">Create Account →</a>
+      <a href="forgot-password.php">Forgot Password?</a>
+    </div>
+  </div>
 </body>
-</html>
+</html><?php

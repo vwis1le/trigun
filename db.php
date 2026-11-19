@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$dbname = 'isproject_db';
+$dbname = 'incident_portal';
 $user = 'isuser';
 $pass = 'StrongPass@2024';
 

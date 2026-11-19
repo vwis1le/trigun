@@ -1,45 +1,392 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISProject1 - Cloud Infrastructure & Security</title>
-    <style>
-        body { font-family: system-ui, sans-serif; background: #0b0f19; color: #f8fafc; text-align: center; padding: 60px 20px; margin: 0; }
-        .hero { max-width: 760px; margin: auto; background: #151e32; padding: 40px; border-radius: 12px; border: 1px solid #1e293b; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h1 { color: #38bdf8; font-size: 32px; margin-bottom: 8px; }
-        .badges { display: flex; justify-content: center; gap: 10px; margin: 20px 0; flex-wrap: wrap; }
-        .badge { background: #0284c7; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; }
-        .btn { display: inline-block; padding: 12px 24px; background: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; margin: 20px 0; }
-        .routes { text-align: left; background: #0b0f19; padding: 20px; border-radius: 8px; margin-top: 25px; font-size: 14px; }
-        ul { padding-left: 20px; margin: 8px 0; }
-        li { margin-bottom: 6px; }
-        a { color: #38bdf8; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Incident Response Portal for Students</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --surface: #ffffff;
+      --ink: #191816;
+      --muted: #6e6b64;
+      --line: #e6e2d8;
+      --line-dark: #191816;
+      --accent-light: #eaf1ed;
+      --badge: #2b593f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      padding: 22px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+    }
+
+    .brand {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      font-size: 13px;
+    }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    nav a:hover { color: var(--ink); }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--badge);
+      background: var(--accent-light);
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: #2b8a53;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px rgba(43, 138, 83, 0.2);
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 80px 40px 100px;
+    }
+
+    .hero {
+      text-align: center;
+      padding-bottom: 90px;
+      border-bottom: 1px solid var(--line-dark);
+    }
+
+    .hero h1 {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(44px, 6vw, 76px);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      max-width: 860px;
+      margin: 0 auto 28px;
+    }
+
+    .hero-desc {
+      max-width: 600px;
+      font-size: 17px;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.6;
+      margin: 0 auto 36px;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .action-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 14px 28px;
+      background: var(--ink);
+      color: var(--bg);
+      border-radius: 2px;
+      letter-spacing: -0.01em;
+      transition: all 0.2s ease;
+    }
+
+    .action-link:hover {
+      background: #2e2c28;
+      transform: translateY(-1px);
+    }
+
+    .section-header {
+      padding: 48px 0 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .endpoint-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .endpoint-table th {
+      text-align: left;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+      font-weight: 400;
+    }
+
+    .endpoint-table td {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    .endpoint-name {
+      font-weight: 500;
+      font-size: 16px;
+      color: var(--ink);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .endpoint-url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .endpoint-url:hover { color: var(--ink); text-decoration: underline; }
+
+    .tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 2px 8px;
+      background: #eeebe3;
+      border-radius: 2px;
+      margin-right: 6px;
+    }
+
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 40px;
+      padding-top: 32px;
+    }
+
+    .spec-card h3 {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 26px;
+      font-weight: 400;
+      margin-bottom: 12px;
+    }
+
+    .spec-card p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .spec-list {
+      margin-top: 16px;
+      list-style: none;
+    }
+
+    .spec-list li {
+      font-size: 13px;
+      padding: 6px 0;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+    }
+
+    .spec-list li span:last-child {
+      color: var(--ink);
+      font-weight: 500;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 50px 40px;
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .footer-left {
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
 </head>
 <body>
-<div class="hero">
-    <h1>🛡️ Incident Response Management System</h1>
-    <p style="color: #94a3b8;">ISProject1: Secure Cloud Application & DevOps Infrastructure</p>
 
-    <div class="badges">
-        <span class="badge">Azure Ubuntu VM</span>
-        <span class="badge">ZeroSSL HTTPS</span>
-        <span class="badge">BCRYPT Salting</span>
-        <span class="badge">HTML5 Validation</span>
-        <span class="badge">Telemetry API</span>
+  <header>
+    <div class="brand">
+      Incident Portal
     </div>
+    <nav>
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        ZeroSSL Active · TLS 1.3
+      </div>
+      <a href="https://app.trigun.me/login.php">Sign In →</a>
+    </nav>
+  </header>
 
-    <a href="https://app.trigun.me/register.php" class="btn">Launch Web Application 🚀</a>
+  <main>
+    <section class="hero">
+      <h1>
+        Security Incident Response Portal for Students
+      </h1>
+      <p class="hero-desc">
+        An operational platform built to intake, classify, and track campus IT vulnerabilities. Deployed across a multi-tier subdomain architecture on Microsoft Azure and secured via automated public key infrastructure.
+      </p>
+      <div class="hero-actions">
+        <a href="https://app.trigun.me/login.php" class="action-link">
+          ↳ Enter Incident Portal
+        </a>
+      </div>
+    </section>
 
-    <div class="routes">
-        <h4 style="margin: 0 0 10px 0; color: #38bdf8;">Configured Production Subdomains:</h4>
-        <ul>
-            <li><strong>Main Landing Page:</strong> <a href="https://trigun.me">https://trigun.me</a></li>
-            <li><strong>Web Application (Auth & Incidents):</strong> <a href="https://app.trigun.me">https://app.trigun.me</a></li>
-            <li><strong>Telemetry & Token REST API:</strong> <a href="https://api.trigun.me">https://api.trigun.me</a></li>
-        </ul>
+    <section>
+      <div class="section-header">
+        <span class="section-title">Production Topology</span>
+      </div>
+
+      <table class="endpoint-table">
+        <thead>
+          <tr>
+            <th style="width: 35%;">Subdomain / Tier</th>
+            <th style="width: 30%;">Operational Role</th>
+            <th style="width: 20%;">Security Protocol</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <span class="endpoint-name">Apex Domain</span>
+              <a href="https://trigun.me" class="endpoint-url">trigun.me</a>
+            </td>
+            <td>Landing architecture & system overview</td>
+            <td><span class="tag">HTTPS</span><span class="tag">ZeroSSL</span></td>
+            <td style="text-align: right;"><a href="https://trigun.me" style="color:var(--ink); font-weight:500;">Active</a></td>
+          </tr>
+          <tr>
+            <td>
+              <span class="endpoint-name">Application Portal</span>
+              <a href="https://app.trigun.me" class="endpoint-url">app.trigun.me</a>
+            </td>
+            <td>Auth, HTML form validation & incident dashboard</td>
+            <td><span class="tag">HTTPS</span><span class="tag">BCRYPT</span></td>
+            <td style="text-align: right;"><a href="https://app.trigun.me/login.php" style="color:var(--ink); font-weight:500;">Launch ↗</a></td>
+          </tr>
+          <tr>
+            <td>
+              <span class="endpoint-name">Telemetry & Token REST API</span>
+              <a href="https://api.trigun.me" class="endpoint-url">api.trigun.me</a>
+            </td>
+            <td>Cryptographic incident verification & JSON telemetry</td>
+            <td><span class="tag">REST JSON</span><span class="tag">TLS 1.3</span></td>
+            <td style="text-align: right;"><a href="https://api.trigun.me" style="color:var(--ink); font-weight:500;">Query ↗</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <div class="section-header">
+        <span class="section-title">System Specifications</span>
+      </div>
+
+      <div class="spec-grid">
+        <div class="spec-card">
+          <h3>Cloud & Transport</h3>
+          <p>Provisioned on a dedicated virtual machine running an Nginx reverse proxy with automated ACME renewal.</p>
+          <ul class="spec-list">
+            <li><span>Cloud Host</span><span>Azure Linux VM</span></li>
+            <li><span>Operating System</span><span>Ubuntu 24.04 LTS</span></li>
+            <li><span>Certificate Authority</span><span>ZeroSSL RSA/ECC</span></li>
+            <li><span>Enforced Port</span><span>443 (HTTP 301 Redirect)</span></li>
+          </ul>
+        </div>
+
+        <div class="spec-card">
+          <h3>Data & Credentials</h3>
+          <p>Zero plain-text storage. Sensitive fields are protected using slow-hash cryptographic functions.</p>
+          <ul class="spec-list">
+            <li><span>Database Engine</span><span>MySQL 8.0</span></li>
+            <li><span>Password Algorithm</span><span>BCRYPT (Cost 10)</span></li>
+            <li><span>Form Validation</span><span>HTML5 Strict Regex</span></li>
+            <li><span>Token Generation</span><span>CSPRNG Cryptographic</span></li>
+          </ul>
+        </div>
+
+        <div class="spec-card">
+          <h3>Innovation Feature</h3>
+          <p>Decoupled telemetry service providing anonymous token status lookups for logged tickets.</p>
+          <ul class="spec-list">
+            <li><span>Verification Method</span><span>JSON Token Lookup</span></li>
+            <li><span>Endpoint</span><span>api.trigun.me/?token=</span></li>
+            <li><span>Version Control</span><span>GitHub Actions Ready</span></li>
+            <li><span>Team Cadence</span><span>Collaborative Git</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-left">
+      STUDENT INCIDENT RESPONSE PORTAL · 2026
     </div>
-</div>
+    <div class="footer-right">
+      Hosted on Microsoft Azure · Domain managed via Namecheap DNS
+    </div>
+  </footer>
+
 </body>
-</html>
+</html><!DOCTYPE html>
+<html lang="en">
