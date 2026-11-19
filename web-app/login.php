@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/../session_init.php';
 date_default_timezone_set('Africa/Nairobi');
 require_once __DIR__ . '/../db.php';
 $msg = '';
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p class="sub">Incident Response Management Portal</p>
     <?php if ($msg): ?><div class="msg"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
     <form method="POST">
-      <label>Student / Staff Email</label>
+      <label>Your Email</label>
       <input type="email" name="email" required placeholder="name@strathmore.edu">
       <label>Password</label>
       <input type="password" name="password" required placeholder="••••••••">

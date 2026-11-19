@@ -144,7 +144,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <div class="auth-box">
     <h1>Create Account</h1>
-    <p class="sub">Student Security Access</p>
 
     <?php if ($msg): ?><div class="msg"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
 
@@ -152,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <label>Full Name</label>
       <input type="text" name="fullname" required pattern="[A-Za-z ]{3,50}" title="Letters only, minimum 3 characters" placeholder="e.g. Ted Kamau">
 
-      <label>Student Email</label>
+      <label>Your Email</label>
       <input type="email" name="email" required placeholder="name@strathmore.edu">
 
       <label>Password (Min 8 chars, 1 Uppercase, 1 Number)</label>
